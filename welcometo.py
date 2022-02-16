@@ -15,11 +15,12 @@ import random
 
 solo = False
 advanced = False
+expert = False
 stack_cnt = 3
 pass_ids = ["a","b","c"]
 pass_idx = stack_cnt
 
-usage = ("Usage: %s [-solo|--advanced]\n")
+usage = ("Usage: %s [-solo|--expert]\n")
 
 # Cards have front (number) and back (effect)
 # Effects are:
@@ -32,7 +33,7 @@ effect_dict = {
     "B": "Bis"           # Duplicate the number of an adjacent house, a fence cannot divide houses
     }
 effect_len=12
-cards = [
+construction_cards = [
     [1,"S"],[1,"E"],[1,"L"],
     [2,"S"],[2,"L"],[2,"E"],
     [3,"S"],[3,"P"],[3,"T"],[3,"B"],
@@ -50,12 +51,55 @@ cards = [
     [15,"S"],[15,"L"],[15,"E"]
     ]
 
-#print( len(cards))
+#print( len(construction_cards))
+
+plan1_cards = [
+    ["Six 1-house estates",8,4],
+    ["Four 2-house estates",8,4],
+    ["Three 3-house estates",8,4],
+    ["Two 4-house estates",6,3],
+    ["Two 5-house estates",8,4],
+    ["Two 6-house estates",10,6],
+    # Advanced cards
+    ["First and last house on every street",7,4],
+    ["Seven temp agencies used", 6,3],
+    ["Five Bis houses built", 6,3],
+    ["Top street complete",6,3],
+    ["Bottom street complete",8,4]
+    ]
+
+plan2_cards = [
+    ["Three 1-house estates and one 6-house estate",11,6],
+    ["One 5-house estate and two 2-house estates",10,6],
+    ["Two 3-house estates and one 4-house estate",12,7],
+    ["One 3-house estate and one 6-house estate",8,4],
+    ["One 4-house estate and one 5-house estate",9,5],
+    ["One 4-house estate and three 1-house estates",9,5],
+    # Advanced cards
+    ["All parks built on two streets",7,4],
+    ["All pools built on two streets",7,4],
+    ["One roundabout, all pools, and all parks built on one street",10,5],
+    ["All pools and all parks built on middle street",8,3],
+    ["All pools and all parks built on bottom street",10,5]
+    ]
+
+plan3_cards = [
+    ["One 1-house estate, one 2-house estate, and one 6-house estate",12,7],
+    ["One 1-house estate, one 4-house estate, and one 5-house estate",13,7],
+    ["One 3-house estate and one 4-house estate",7,3],
+    ["One 2-house estate and one 5-house estate",7,3],
+    ["One 1-house estate, two 2-house estate, and one 3-house estate",11,6],
+    ["One 2-house estate, one 3-house estate, and one 5-house estate",13,7]
+    ]
+
+basic_plan_cnt = len(plan3_cards)
+
 
 ####################################################################
-# This function reads cards into stacks
+# This function reads construction_cards into stacks
 # Parameter: init - set True to shuffle deck
-# Return: True if there are cards remaining in deck, False otherwise
+# Return: True if there are construction_cards remaining in deck,
+#         False otherwise
 # Note: The global variables are only used here but declared outside
 # The scope of the function to allow them to be static.
 ####################################################################
@@ -72,10 +116,10 @@ def read_stacks(init):
 
     if init:
         card_num = 0
-        random.shuffle(cards)
-        if not advanced:
+        random.shuffle(construction_cards)
+        if not expert:
             print("")
-        if solo or advanced:
+        if solo or expert:
             return
 
     else:
@@ -83,7 +127,7 @@ def read_stacks(init):
         if solo:
             print("%s  %s" % ("Number", "Effect"))
             print("%s  %s" % ("="*len("Number"), "="*effect_len))
-        elif advanced:
+        elif expert:
             print("")
             print("%s  %s  %s" % ("Pass", "Number", "Effect"))
             print("%s  %s  %s" % ("="*len("Pass"), "="*len("Number"), "="*effect_len))
@@ -93,25 +137,25 @@ def read_stacks(init):
 
     # Populate stacks
     for stack_num in range(stack_cnt):
-        if advanced and stack_num==0 and pass_idx < stack_cnt:
-            # If playing advanced game, put passed card on stack 0
+        if expert and stack_num==0 and pass_idx < stack_cnt:
+            # If playing expert game, put passed card on stack 0
             number[0] = number[pass_idx]
             effect[0] = effect[pass_idx]
-        else: # Not playing advanced game or no cards passed yet
-            # Only the normal game (non-solo, non-advanced) uses the effect from the previous card
-            if not solo and not advanced:
+        else: # Not playing expert game or no construction_cards passed yet
+            # Only the normal game (non-solo, non-expert) uses the effect from the previous card
+            if not solo and not expert:
                 prev_effect[stack_num] = effect[stack_num]
 
             # Read the next card
-            number[stack_num] = cards[card_num][0]
-            effect[stack_num] = cards[card_num][1]
+            number[stack_num] = construction_cards[card_num][0]
+            effect[stack_num] = construction_cards[card_num][1]
             card_num += 1
 
             # If playing to solo game and the solo card comes up, indicate it and read another card
             if solo and effect[stack_num] == "solo":
                 print( "################ SOLO ####################")
-                number[stack_num] = cards[card_num+stack_num][0]
-                effect[stack_num] = cards[card_num+stack_num][1]
+                number[stack_num] = construction_cards[card_num+stack_num][0]
+                effect[stack_num] = construction_cards[card_num+stack_num][1]
                 card_num += 1
         
             # Use the effect dictionary to get the effect name from its code
@@ -125,19 +169,19 @@ def read_stacks(init):
             # Print the card data for the given game mode
             if solo:
                 print("%6d  %s" % (number[stack_num], effect[stack_num]))
-            elif advanced:
+            elif expert:
                 print("   %s  %6d  %s" % (pass_ids[stack_num], number[stack_num], effect[stack_num]))
             else:
                 print("%6d  %s  %s" % (number[stack_num], prev_effect[stack_num].ljust(effect_len), effect[stack_num]))
     
     if not init:
-        print("\n%d cards remaining" % (len(cards)-card_num))
+        print("\n%d cards remaining" % (len(construction_cards)-card_num))
 
-    # Return value indicates if there are are enough cards for another draw
-    if advanced:
-        return card_num+stack_cnt-1 <= len(cards)
+    # Return value indicates if there are are enough construction_cards for another draw
+    if expert:
+        return card_num+stack_cnt-1 <= len(construction_cards)
     else:    
-        return card_num+stack_cnt <= len(cards)
+        return card_num+stack_cnt <= len(construction_cards)
 
 # Parse Arguments
 if len( sys.argv ) == 1:
@@ -147,6 +191,9 @@ elif len( sys.argv ) == 2:
         solo = True
     elif (sys.argv[1] == "--advanced"):
         advanced = True
+    elif (sys.argv[1] == "--expert"):
+        advanced = True
+        expert = True
     else:
         print( usage % sys.argv[0] )
         sys.exit()
@@ -157,21 +204,38 @@ else:
 # Initialize Stacks
 read_stacks(True)
 
+plans = [[]]*3
+if advanced:
+    plans[0] = random.choice(plan1_cards)
+    plans[1] = random.choice(plan2_cards)
+else:
+    plans[0] = random.choice(plan1_cards[:basic_plan_cnt])
+    plans[1] = random.choice(plan2_cards[:basic_plan_cnt])
+
+plans[2] = random.choice(plan3_cards)
+
+plan_txt_cnt =62
+print("Plan  First  Others  Objective")
+print("%s  %s  %s  %s" % ("="*len("Plan"),"="*len("First"),"="*len("Others"),"="*plan_txt_cnt))
+for plan_num,plan in enumerate(plans):
+    print("%4d  %5d  %6d  %s"%(plan_num+1,plan[1],plan[2],plan[0]))
+print("")
+
 # If playing solo mode, shuffle "solo" card into bottom half of deck
 if solo:
-    top = cards[:int((len(cards)+1)/2)]
-    bottom = cards[int((len(cards)+1)/2):]
+    top = construction_cards[:int((len(construction_cards)+1)/2)]
+    bottom = construction_cards[int((len(construction_cards)+1)/2):]
     bottom += [[0,"solo"]]
     random.shuffle(bottom)
-    cards = top + bottom
+    construction_cards = top + bottom
 
-# While there are cards to draw into each stack
+# While there are construction_cards to draw into each stack
 while read_stacks(False):
     valid_input = False
 
     # Prompt user for what to do next, based on the game mode and validate their response
     while not valid_input:
-        if advanced:
+        if expert:
             cmd = input('Enter card to pass (a,b,c), s to reshuffle, or q to quit\n')
             for pass_idx,pass_id in enumerate(pass_ids):
                 if cmd == pass_id:
