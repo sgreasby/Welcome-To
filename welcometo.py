@@ -20,7 +20,11 @@ stack_cnt = 3
 pass_ids = ["a","b","c"]
 pass_idx = stack_cnt
 
-usage = ("Usage: %s [-solo|--expert]\n")
+usage = "Usage: %s [--advanced|--solo|--expert]\n" %(sys.argv[0])+\
+        "  Where no options results in nomral mode.\n"+\
+        "  --advanced uses advanced city plan cards.\n"+\
+        "  --solo uses solo game setup.\n"+\
+        "  --expert uses advanced city plans and expert game setup.\n"
 
 # Cards have front (number) and back (effect)
 # Effects are:
@@ -195,10 +199,10 @@ elif len( sys.argv ) == 2:
         advanced = True
         expert = True
     else:
-        print( usage % sys.argv[0] )
+        print( usage )
         sys.exit()
 else:
-    print( usage % sys.argv[0] )
+    print( usage )
     sys.exit()
 
 # Initialize Stacks
